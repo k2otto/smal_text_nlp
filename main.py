@@ -1,16 +1,14 @@
-# This is a sample Python script.
+################ PERFORMING PREPROCESSING OF INPUT TEXT ###################
+def preprocess_text(df, column):
+    import re
+    for i in range(len(df)):
+        ######  REMOVING SPECIAL CHARACTERS
+        df.loc[i, column] = re.sub(r'\W', ' ', str(df.loc[i, column]))
 
-# Press Umschalt+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+        ######  REMOVING ALL SINGLE CHARACTERS
+        df.loc[i, column] = re.sub(r'\s+[a-zA-Z]\s+', ' ', str(df.loc[i, column]))
 
+        ######  REMOVING MULTIPLE SPACES WITH SINGLE SPACE
+        df.loc[i, column] = re.sub(r'\s+', ' ', str(df.loc[i, column]))
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Strg+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    return df
