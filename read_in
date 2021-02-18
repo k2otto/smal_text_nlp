@@ -1,0 +1,16 @@
+
+
+import pandas as pd
+import nltk
+from nltk.tokenize import sent_tokenize, word_tokenize
+import warnings
+import gensim
+from gensim.models import Word2Vec
+
+df= pd.read_csv('C:/Users/User/Downloads/archive/twcs/twcs.csv', encoding='UTF8', dtype = str)
+
+df.text= df['text'].str.lower()
+
+print(df.text.head(10))
+
+df2=df
