@@ -12,3 +12,5 @@ def preprocess_text(df, column):
         df.loc[i, column] = re.sub(r'\s+', ' ', str(df.loc[i, column]))
 
     return df
+
+#############################
