@@ -33,25 +33,33 @@ chars_to_remove = ['.', '!', '?',":",";","'","[","]","(",")", " "]
 rx_to_be_removed = '[' + re.escape(''.join(chars_to_remove)) + ']'
 
 candidate=input_str.str.findall("(?<=vst).*?\w+|(?<=zaehlernummer).*?\w+ ")
-indicator_word=candidate*0
+indicator_word1=candidate*0
 indicator_word2=candidate*0
+indicator_word3=candidate*0
 
 for index, row in candidate.iteritems():
     candidate.at[index] = re.sub(rx_to_be_removed, '', str(list(set(candidate[index]))))
 
 
-for index, row in indicator_word.iteritems():
-    indicator_word[index]=list(set(input_str.str.findall("\w*..(?=\s+"+str(df.zaehlernummer[index])+")")[index]))
-   # indicator_word2[index]=list(set(input_str.str.findall("(\w*..){2}(?=\s+"+str(df.zaehlernummer[index])+")")[index]))
+for index, row in indicator_word1.iteritems():
+    indicator_word1[index]=list(set(input_str.str.findall("\w*..(?=\s+"+str(df.zaehlernummer[index])+")")[index]))
+    indicator_word2[index]=list(set(input_str.str.findall("(\S+)\s*"+str(df.zaehlernummer[index]))[index]))
+    indicator_word3[index]=indicator_word2[index]
 
+
+    indicator_word1.at[index] = re.sub(rx_to_be_removed, '', str(list(set(indicator_word1[index]))))
+    indicator_word2.at[index] = re.sub(rx_to_be_removed, '', str(list(set(indicator_word2[index]))))
+    indicator_word3.at[index] = re.sub(r'\s*\d+\s*', '', indicator_word2[index])
 
 x=candidate==df.zaehlernummer
-
+indicator_word3
 
 print(x.mean())
 
-#0.4473684210526316
-
+#0.40425531914893614
+print(indicator_word1.value_counts())
+print(indicator_word2.value_counts())
+print(indicator_word3.value_counts())
 
 
 
