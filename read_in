@@ -6,14 +6,71 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 import warnings
 import gensim
 from gensim.models import Word2Vec
+import gzip
+import json
+import os
+import re
+import csv
+import math
+pd.set_option('display.max_columns', None)
 
-df= pd.read_csv('C:/Users/User/Downloads/archive/twcs/twcs.csv', encoding='UTF8', dtype = str)
 
-df.text= df['text'].str.lower()
+path='C:/Users/User/Downloads'
 
-print(df.text.head(10))
+os.chdir(path)
 
-df2=df
+
+df= pd.read_csv('C:/Users/User/Downloads/Zaehler-Sample-Data_v_2.csv', sep=";",  dtype = str)
+
+df.purpose= df['purpose'].str.lower()
+
+
+df = df.loc[~df.zaehlernummer.isna()]
+
+candidate = [None] * len(df.purpose)
+input_str=df.purpose
+chars_to_remove = ['.', '!', '?',":",";","'","[","]","(",")", " "]
+rx_to_be_removed = '[' + re.escape(''.join(chars_to_remove)) + ']'
+
+candidate=input_str.str.findall("(?<=vst).*?\w+|(?<=zaehlernummer).*?\w+ ")
+indicator_word=candidate*0
+indicator_word2=candidate*0
+
+for index, row in candidate.iteritems():
+    candidate.at[index] = re.sub(rx_to_be_removed, '', str(list(set(candidate[index]))))
+
+
+for index, row in indicator_word.iteritems():
+    indicator_word[index]=list(set(input_str.str.findall("\w*..(?=\s+"+str(df.zaehlernummer[index])+")")[index]))
+   # indicator_word2[index]=list(set(input_str.str.findall("(\w*..){2}(?=\s+"+str(df.zaehlernummer[index])+")")[index]))
+
+
+x=candidate==df.zaehlernummer
+
+
+print(x.mean())
+
+#0.4473684210526316
+
+
+
+
+
+
+
+
+class zaehler_extract:
+    def __init__(self,input,name):
+        self.name=name
+        self.input=input
+
+    def
+
+#df.text= df['text'].str.lower()
+
+#print(df.text.head(10))
+
+#df2=df
 
 
    ###
