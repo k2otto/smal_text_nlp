@@ -12,6 +12,15 @@ import os
 import re
 import csv
 import math
+import numpy as np
+from sklearn.experimental import enable_hist_gradient_boosting  # noqa
+from sklearn.ensemble import HistGradientBoostingRegressor
+from sklearn.inspection import plot_partial_dependence
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+from sklearn.linear_model import LogisticRegression
 pd.set_option('display.max_columns', None)
 
 
@@ -23,11 +32,13 @@ os.chdir(path)
 df= pd.read_csv('C:/Users/User/Downloads/Zaehler-Sample-Data_v_2.csv', sep=";",  dtype = str)
 
 df.purpose= df['purpose'].str.lower()
+df.zaehlernummer= df['zaehlernummer'].str.lower()
 
 
 df = df.loc[~df.zaehlernummer.isna()]
 
 candidate = [None] * len(df.purpose)
+
 input_str=df.purpose
 chars_to_remove = ['.', '!', '?',":",";","'","[","]","(",")", " "]
 rx_to_be_removed = '[' + re.escape(''.join(chars_to_remove)) + ']'
@@ -37,8 +48,27 @@ indicator_word1=candidate*0
 indicator_word2=candidate*0
 indicator_word3=candidate*0
 
+correct_candidate=candidate*0
+
+candidate1=candidate
+
+candidate2=input_str.str.findall("(?<=zaehler-nr).*?\w+")
+candidate3=input_str.str.findall("abschlag\s*(\S+)\s*(\S+)\s*")
+
+
+
+
 for index, row in candidate.iteritems():
-    candidate.at[index] = re.sub(rx_to_be_removed, '', str(list(set(candidate[index]))))
+    candidate1.at[index] = re.sub(rx_to_be_removed, '', str(list(set(candidate1[index]))))
+
+
+for index, row in candidate.iteritems():
+    candidate2.at[index] = re.sub(rx_to_be_removed, '', str(list(set(candidate2[index]))))
+
+for index, row in candidate.iteritems():
+    if len(list(set(candidate3[index])))>0:
+        candidate3.at[index] = re.sub(rx_to_be_removed, '', str(list(set(candidate3[index]))[-1][-1]))
+
 
 
 for index, row in indicator_word1.iteritems():
@@ -51,28 +81,55 @@ for index, row in indicator_word1.iteritems():
     indicator_word2.at[index] = re.sub(rx_to_be_removed, '', str(list(set(indicator_word2[index]))))
     indicator_word3.at[index] = re.sub(r'\s*\d+\s*', '', indicator_word2[index])
 
-x=candidate==df.zaehlernummer
-indicator_word3
+x=candidate1==df.zaehlernummer
+
 
 print(x.mean())
 
-#0.40425531914893614
+#0.4528301886792453
 print(indicator_word1.value_counts())
 print(indicator_word2.value_counts())
 print(indicator_word3.value_counts())
 
 
 
+for index,row in candidate.iteritems():
+    if candidate1[index]==df.zaehlernummer[index]:
+        correct_candidate[index]=1
+    elif candidate2[index]==df.zaehlernummer[index]:
+        correct_candidate[index]=2
+    elif candidate3[index]==df.zaehlernummer[index]:
+         correct_candidate[index]=3
+
+
+for index,row in correct_candidate.iteritems():
+    if not correct_candidate[index]:
+        correct_candidate.at[index]=9999
+
+print(correct_candidate.value_counts())
+##############################
+# Regression
+
+y=correct_candidate
+
+clf = LogisticRegression(random_state=0).fit(X, y)
+>>> clf.predict(X[:2, :])
+array([0, 0])
+>>> clf.predict_proba(X[:2, :])
+
+
+x=candidate1==candidate2
+
+print(x.mean())
 
 
 
+#class zaehler_extract:
+#    def __init__(self,input,name):
+#        self.name=name
+#        self.input=input
 
-class zaehler_extract:
-    def __init__(self,input,name):
-        self.name=name
-        self.input=input
-
-    def
+#    def
 
 #df.text= df['text'].str.lower()
 
