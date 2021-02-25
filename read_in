@@ -1,5 +1,6 @@
 
 
+import matplotlib.pyplot as plt
 import pandas as pd
 import nltk
 from nltk.tokenize import sent_tokenize, word_tokenize
@@ -17,9 +18,11 @@ from sklearn.experimental import enable_hist_gradient_boosting  # noqa
 from sklearn.ensemble import HistGradientBoostingRegressor
 from sklearn.inspection import plot_partial_dependence
 import numpy as np
-import matplotlib.pyplot as plt
-
-
+from numpy.random import seed
+from numpy.random import rand
+import random
+from sklearn.ensemble import ExtraTreesClassifier
+from sklearn.datasets import make_classification
 from sklearn.linear_model import LogisticRegression
 pd.set_option('display.max_columns', None)
 
@@ -111,16 +114,74 @@ print(correct_candidate.value_counts())
 # Regression
 
 y=correct_candidate
-
-clf = LogisticRegression(random_state=0).fit(X, y)
->>> clf.predict(X[:2, :])
-array([0, 0])
->>> clf.predict_proba(X[:2, :])
+y=y.to_numpy(dtype=object)
+y=y.astype('int')
 
 
-x=candidate1==candidate2
 
+
+#X = np.c_[pd.get_dummies(indicator_word1, prefix='indicator_word1')]
+X = pd.DataFrame(pd.get_dummies(indicator_word1, prefix='indicator_word1',dummy_na=True))
+Z = pd.DataFrame(pd.get_dummies(indicator_word2, prefix='indicator_word2',dummy_na=True))
+Y = pd.DataFrame(pd.get_dummies(indicator_word2, prefix='indicator_word3',dummy_na=True))
+
+X = X.join(Z)
+
+
+
+#X, y = make_classification(n_features=4, random_state=0)
+clf = ExtraTreesClassifier(n_estimators=100, random_state=0)
+
+#####################
+# Split train test
+train_fraction=0.66
+train_length=round(len(y)*train_fraction)
+
+train_index=random.sample(list(range(0, (len(y)))), train_length)
+test_index=list(range(0, (len(y))))
+test_index=list(np.setdiff1d(test_index,train_index))
+
+
+clf.fit(X.iloc[train_index],y[train_index])
+
+forecasts=clf.predict(X.iloc[test_index])
+
+x=forecasts==y[test_index]
+p=clf.predict_proba(X.iloc[test_index])
+
+index_forecaste= [None] * len(y[test_index])
+
+prediction_correct_value= [None] * len(y[test_index])
+set_list=list(set(y))
+
+
+for j in range(len(index_forecaste)):
+    index_forecaste[j]=set_list.index(forecasts[j])
+    prediction_correct_value[j]=p[j,index_forecaste[j]]
+
+
+
+
+print(p)
+print("###########")
+print("Mean accuracy")
 print(x.mean())
+print("Lowest accuracy rate")
+print(min(prediction_correct_value))
+
+
+importances = clf.feature_importances_
+std = np.std([tree.feature_importances_ for tree in clf.estimators_],
+             axis=0)
+indices = np.argsort(importances)[::-1]
+
+# Print the feature ranking
+
+(pd.Series(clf.feature_importances_, index=X.columns)
+   .nlargest(15)
+   .plot(kind='barh'))
+
+
 
 
 
